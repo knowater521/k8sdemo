@@ -1,0 +1,36 @@
+## PV
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  namespace: ingress-nginx
+  name: redis
+  labels:
+    app: redis             #设置 pv 的 label 标签
+spec:
+  capacity:          
+    storage: 5Gi           #设置 pv 存储资源大小 
+  accessModes:       
+  - ReadWriteOnce
+  mountOptions:
+  - hard
+  - nfsvers=4.1    
+  nfs:                     #指定使用 NFS 存储驱动
+    server: 172.16.2.4   #指定 NFS 服务器 IP 地址
+    path: /nfs/redis       #指定 NFS 共享目录的位置，且需提前在该目录中创建 redis 目录
+  persistentVolumeReclaimPolicy: Retain  
+---
+## PVC
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  namespace: ingress-nginx
+  name: redis
+spec:
+  resources:
+    requests:
+      storage: 5Gi         #设置 pvc 存储资源大小
+  accessModes:
+  - ReadWriteOnce
+  selector:
+    matchLabels:
+      app: redis           #根据 Label 选择对应 PV
